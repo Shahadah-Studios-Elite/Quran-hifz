@@ -42,12 +42,16 @@ const RECITERS = [
 const toArabicDigits = (num: number) =>
   num.toString().replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[Number(d)]);
 
+const normalizeSlug = (str: string) =>
+  str.toLowerCase().replace(/[^a-z0-9]/g, '');
+
 export default function QuranHifzPage() {
   const [viewMode, setViewMode] = useState<'mushaf' | 'surah'>('mushaf');
   const [surahs, setSurahs] = useState<SurahSummary[]>([]);
   const [selectedSurahNum, setSelectedSurahNum] = useState<number>(1);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [reciter, setReciter] = useState<string>('ar.alafasy');
+  const [urlInitialized, setUrlInitialized] = useState<boolean>(false);
 
   const [surahDetail, setSurahDetail] = useState<SurahDetail | null>(null);
   const [pageAyahs, setPageAyahs] = useState<Ayah[]>([]);
@@ -60,18 +64,62 @@ export default function QuranHifzPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const activeCardRef = useRef<HTMLDivElement | null>(null);
 
-  // 1. Fetch Surah Index
   useEffect(() => {
     fetch('https://api.alquran.cloud/v1/surah')
       .then((res) => res.json())
       .then((data) => {
-        if (data.code === 200) setSurahs(data.data);
-      });
+        if (data.code === 200) {
+          const list: SurahSummary[] = data.data;
+          setSurahs(list);
+
+          const params = new URLSearchParams(window.location.search);
+          const surahParam = params.get('surah');
+          const pageParam = params.get('page');
+
+          if (surahParam) {
+            const targetSlug = normalizeSlug(surahParam);
+            const found = list.find(
+              (s) =>
+                normalizeSlug(s.englishName) === targetSlug ||
+                String(s.number) === surahParam.trim()
+            );
+            if (found) {
+              setSelectedSurahNum(found.number);
+              setViewMode('surah');
+            }
+          } else if (pageParam) {
+            const p = Number(pageParam);
+            if (p >= 1 && p <= 604) {
+              setPageNumber(p);
+              setViewMode('mushaf');
+            }
+          }
+          setUrlInitialized(true);
+        }
+      })
+      .catch(() => setUrlInitialized(true));
   }, []);
 
-  // 2. Fetch Surah Hifz View Data
   useEffect(() => {
-    if (viewMode !== 'surah') return;
+    if (!urlInitialized || surahs.length === 0) return;
+
+    const url = new URL(window.location.href);
+    if (viewMode === 'surah') {
+      const currentSurah = surahs.find((s) => s.number === selectedSurahNum);
+      if (currentSurah) {
+        url.searchParams.set('surah', currentSurah.englishName);
+        url.searchParams.delete('page');
+      }
+    } else {
+      url.searchParams.set('page', String(pageNumber));
+      url.searchParams.delete('surah');
+    }
+
+    window.history.replaceState({}, '', url.toString());
+  }, [viewMode, selectedSurahNum, pageNumber, surahs, urlInitialized]);
+
+  useEffect(() => {
+    if (!urlInitialized || viewMode !== 'surah') return;
     setLoading(true);
     setActiveAyahIndex(null);
 
@@ -103,11 +151,10 @@ export default function QuranHifzPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [selectedSurahNum, reciter, viewMode]);
+  }, [selectedSurahNum, reciter, viewMode, urlInitialized]);
 
-  // 3. Fetch Real 604-Page Mushaf Data
   useEffect(() => {
-    if (viewMode !== 'mushaf') return;
+    if (!urlInitialized || viewMode !== 'mushaf') return;
     setLoading(true);
     setActiveAyahIndex(null);
 
@@ -140,7 +187,7 @@ export default function QuranHifzPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [pageNumber, reciter, viewMode]);
+  }, [pageNumber, reciter, viewMode, urlInitialized]);
 
   const activeAyahList =
     viewMode === 'mushaf' ? pageAyahs : surahDetail?.ayahs || [];
@@ -150,7 +197,6 @@ export default function QuranHifzPage() {
       ? activeAyahList[activeAyahIndex]
       : null;
 
-  // 4. Play Audio & Scroll Active Ayah Into View
   useEffect(() => {
     if (currentAyah && audioRef.current) {
       audioRef.current.src = currentAyah.audioUrl;
@@ -192,11 +238,10 @@ export default function QuranHifzPage() {
 
   return (
     <>
-      {/* TOP NAVIGATION BAR */}
       <header className="app-header">
         <div className="brand">
           <h1>QuranHifz</h1>
-          <span className="brand-tag">Shahadah Studios Elite</span>
+          <span className="brand-tag">SahihFinder</span>
         </div>
 
         <div className="controls">
@@ -249,11 +294,9 @@ export default function QuranHifzPage() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
       {loading ? (
-        <div className="loader">Loading Mushaf...</div>
+        <div className="loader">Loading Quran...</div>
       ) : viewMode === 'mushaf' ? (
-        /* REAL 604-PAGE MUSHAF VIEW */
         <main className="sf-container">
           <div className="mushaf-toolbar">
             <button
@@ -332,7 +375,6 @@ export default function QuranHifzPage() {
           </div>
         </main>
       ) : (
-        /* VERSE-BY-VERSE SURAH HIFZ VIEW */
         surahDetail && (
           <main className="container">
             <div className="surah-banner">
@@ -382,7 +424,6 @@ export default function QuranHifzPage() {
         )
       )}
 
-      {/* STICKY AUDIO PLAYER */}
       {currentAyah && activeAyahIndex !== null && (
         <div className="audio-bar">
           <div className="audio-inner">
