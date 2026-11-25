@@ -583,3 +583,14 @@ body {
     padding-top: 112px !important;
   }
 }
+
+.audio-bar audio {
+  color-scheme: dark;
+  filter: invert(0.92) hue-rotate(145deg) saturate(1.4) contrast(0.95);
+  border-radius: 999px;
+  height: 36px;
+}
+
+.audio-bar audio::-webkit-media-controls-panel {
+  background-color: #e2e8f0;
+}
