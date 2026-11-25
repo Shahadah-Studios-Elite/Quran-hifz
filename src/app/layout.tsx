@@ -17,7 +17,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'QuranHifz Read and listen to the holy quran',
+  title: 'QuranHifz | Read and listen to the holy quran',
   description: 'Read, listen, and memorize the Holy Quran - SahihFinder',
   icons: {
     icon: '/favicon1.png',
