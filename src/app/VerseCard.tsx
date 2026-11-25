@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Ayah } from "@/types/quran";
+import { Ayah } from "../types/quran";
 
 interface VerseCardProps {
   ayah: Ayah;
