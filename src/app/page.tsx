@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { SurahMeta, SurahDetail, Ayah } from "@/types/quran";
-import SurahSelector from "@/components/SurahSelector";
-import VerseCard from "@/components/VerseCard";
-import AudioPlayer from "@/components/AudioPlayer";
+import { SurahMeta, SurahDetail, Ayah } from "../types/quran";
+import SurahSelector from "../components/SurahSelector";
+import VerseCard from "../components/VerseCard";
+import AudioPlayer from "../components/AudioPlayer";
 
 export default function QuranHifzPage() {
   const [surahs, setSurahs] = useState<SurahMeta[]>([]);
