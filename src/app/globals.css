@@ -513,6 +513,9 @@ padding: 0.4rem 0.4rem;
 font-size: 0.8rem; 
 } 
 }
+/* =========================================================
+   COMPACT FIXED TOP HEADER (DESKTOP & MOBILE)
+   ========================================================= */
 html,
 body {
   overflow-x: clip !important;
@@ -529,11 +532,54 @@ body {
 }
 
 body {
-  padding-top: 84px !important;
+  padding-top: 82px !important;
 }
 
 @media (max-width: 640px) {
+  .app-header {
+    padding: 0.45rem 0.65rem !important;
+    gap: 0.4rem !important;
+  }
+
+  .brand h1 {
+    font-size: 1.05rem !important;
+  }
+
+  .brand-tag {
+    font-size: 0.68rem !important;
+    padding: 0.1rem 0.45rem !important;
+  }
+
+  .controls {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.35rem !important;
+  }
+
+  .mode-tabs {
+    grid-column: 1 / -1 !important;
+    padding: 2px !important;
+  }
+
+  .mode-tab {
+    padding: 0.28rem 0.35rem !important;
+    font-size: 0.74rem !important;
+    min-height: 28px !important;
+  }
+
+  .controls select,
+  .controls > button {
+    width: 100% !important;
+    min-height: 30px !important;
+    padding: 0.2rem 0.4rem !important;
+    font-size: 0.74rem !important;
+  }
+
+  .controls select:only-of-type {
+    grid-column: 1 / -1 !important;
+  }
+
   body {
-    padding-top: 225px !important;
+    padding-top: 112px !important;
   }
 }
