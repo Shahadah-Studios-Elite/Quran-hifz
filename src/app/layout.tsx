@@ -16,8 +16,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'QuranHifz | SahihFinder Imprint',
-  description: 'Read, listen, and memorize the Holy Quran — a SahihFinder imprint.',
+  title: 'QuranHifz - Read and listen to the holy quran',
+  description: 'Read, listen, and memorize the Holy Quran.',
 };
 
 export default function RootLayout({
