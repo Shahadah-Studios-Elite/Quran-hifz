@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { SurahMeta } from "@/types/quran";
+import { SurahMeta } from "../types/quran";
 
 interface SurahSelectorProps {
   surahs: SurahMeta[];
