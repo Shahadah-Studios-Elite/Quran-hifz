@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Amiri } from 'next/font/google';
 import './globals.css';
+import LandingOverlay from '@/components/LandingOverlay';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const amiri = Amiri({
@@ -16,7 +17,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'QuranHifz - Read and listen to the holy quran',
+  title: 'QuranHifz Read and listen to the holy quran',
   description: 'Read, listen, and memorize the Holy Quran - SahihFinder',
   icons: {
     icon: '/favicon1.png',
@@ -32,7 +33,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${amiri.variable}`}>
-      <body>{children}</body>
+      <body>
+        <LandingOverlay />
+        {children}
+      </body>
     </html>
   );
 }
