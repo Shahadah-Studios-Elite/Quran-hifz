@@ -40,9 +40,9 @@ export default function QuranHifzPage() {
       );
       const json = await response.json();
 
-      if (json.code === 200 && Array.isArray(json.data)) {
-        const arabicEdition = json.data[0];
-        const englishEdition = json.data[1];
+      if (json.code === 200 && Array.isArray(json.data) && json.data.length >= 2) {
+        const arabicEdition = json.data;
+        const englishEdition = json.data;
 
         const mergedAyahs: Ayah[] = arabicEdition.ayahs.map(
           (
