@@ -156,7 +156,7 @@ export default function LandingOverlay() {
         {/* Primary CTA Buttons */}
         <div className="qh-cta-group">
           <button className="qh-primary-cta" onClick={enterReader}>
-            Start Reading (#read) →
+            Start Reading!
           </button>
 
           {lastUrl && (
