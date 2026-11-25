@@ -196,7 +196,7 @@ export default function QuranHifzPage() {
       <header className="app-header">
         <div className="brand">
           <h1>QuranHifz</h1>
-          <span className="brand-tag">Shahadah Studios</span>
+          <span className="brand-tag">Shahadah Studios Elite</span>
         </div>
 
         <div className="controls">
