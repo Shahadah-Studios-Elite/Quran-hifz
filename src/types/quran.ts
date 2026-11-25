@@ -1,4 +1,4 @@
-export interface SurahMeta {
+export interface SurahSummary {
   number: number;
   name: string;
   englishName: string;
@@ -10,11 +10,20 @@ export interface SurahMeta {
 export interface Ayah {
   number: number;
   numberInSurah: number;
-  text: string;
-  translation: string;
-  audio: string;
+  arabicText: string;
+  translationText: string;
+  audioUrl: string;
+  page?: number;
+  juz?: number;
+  surahNumber?: number;
+  surahName?: string;
+  surahEnglishName?: string;
 }
 
-export interface SurahDetail extends SurahMeta {
+export interface SurahDetail {
+  number: number;
+  name: string;
+  englishName: string;
+  englishNameTranslation: string;
   ayahs: Ayah[];
 }
