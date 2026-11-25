@@ -241,7 +241,13 @@ export default function QuranHifzPage() {
       <header className="app-header">
         <div className="brand">
           <h1>QuranHifz</h1>
-          <span className="brand-tag">SahihFinder</span>
+          <a
+            href="https://www.sahihfinder.com"
+            className="brand-tag"
+            style={{ textDecoration: 'none' }}
+          >
+            ← SahihFinder
+          </a>
         </div>
 
         <div className="controls">
