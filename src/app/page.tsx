@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useRef, useState } from 'react';
 
-interface SurahMeta {
+interface SurahSummary {
   number: number;
   name: string;
   englishName: string;
@@ -14,176 +14,212 @@ interface SurahMeta {
 interface Ayah {
   number: number;
   numberInSurah: number;
-  text: string;
-  translation: string;
-  audio: string;
+  arabicText: string;
+  translationText: string;
+  audioUrl: string;
+  page?: number;
+  juz?: number;
+  surahNumber?: number;
+  surahName?: string;
+  surahEnglishName?: string;
 }
 
-interface SurahDetail extends SurahMeta {
+interface SurahDetail {
+  number: number;
+  name: string;
+  englishName: string;
+  englishNameTranslation: string;
   ayahs: Ayah[];
 }
 
 const RECITERS = [
-  { id: "ar.alafasy", name: "Mishary Rashid Alafasy" },
-  { id: "ar.abdurrahmaansudais", name: "Abdur-Rahman As-Sudais" },
-  { id: "ar.husary", name: "Mahmoud Khalil Al-Husary" },
-  { id: "ar.minshawi", name: "Mohamed Siddiq Al-Minshawi" },
+  { id: 'ar.alafasy', name: 'Mishary Rashid Alafasy' },
+  { id: 'ar.husary', name: 'Mahmoud Khalil Al-Husary (Hifz)' },
+  { id: 'ar.abdulbasitmurattal', name: 'Abdul Basit (Murattal)' },
+  { id: 'ar.minshawi', name: 'Mohamed Siddiq El-Minshawi' },
 ];
 
+const toArabicDigits = (num: number) =>
+  num.toString().replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[Number(d)]);
+
 export default function QuranHifzPage() {
-  const [surahs, setSurahs] = useState<SurahMeta[]>([]);
-  const [selectedSurah, setSelectedSurah] = useState<number>(1);
-  const [reciter, setReciter] = useState<string>("ar.alafasy");
-  const [surahData, setSurahData] = useState<SurahDetail | null>(null);
+  const [viewMode, setViewMode] = useState<'mushaf' | 'surah'>('mushaf');
+  const [surahs, setSurahs] = useState<SurahSummary[]>([]);
+  const [selectedSurahNum, setSelectedSurahNum] = useState<number>(1);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [reciter, setReciter] = useState<string>('ar.alafasy');
+
+  const [surahDetail, setSurahDetail] = useState<SurahDetail | null>(null);
+  const [pageAyahs, setPageAyahs] = useState<Ayah[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const [currentAyahIndex, setCurrentAyahIndex] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [repeatAyah, setRepeatAyah] = useState<boolean>(false);
-  const [hifzMode, setHifzMode] = useState<boolean>(false);
-  const [revealedAyahs, setRevealedAyahs] = useState<Record<number, boolean>>({});
+  const [activeAyahIndex, setActiveAyahIndex] = useState<number | null>(null);
+  const [isRepeatAyah, setIsRepeatAyah] = useState<boolean>(false);
+  const [hideTranslation, setHideTranslation] = useState<boolean>(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const activeCardRef = useRef<HTMLDivElement | null>(null);
 
+  // 1. Fetch Surah Index
   useEffect(() => {
-    fetch("https://api.alquran.cloud/v1/surah")
+    fetch('https://api.alquran.cloud/v1/surah')
       .then((res) => res.json())
       .then((data) => {
-        if (data.code === 200) {
-          setSurahs(data.data);
-        }
-      })
-      .catch(console.error);
+        if (data.code === 200) setSurahs(data.data);
+      });
   }, []);
 
-  const loadSurah = useCallback(async () => {
-    setLoading(true);
-    setIsPlaying(false);
-    setCurrentAyahIndex(null);
-    setRevealedAyahs({});
-
-    try {
-      const response = await fetch(
-        `https://api.alquran.cloud/v1/surah/${selectedSurah}/editions/${reciter},en.sahih`
-      );
-      const json = await response.json();
-
-      if (json.code === 200 && Array.isArray(json.data) && json.data.length >= 2) {
-        const arabicEdition = json.data[0];
-        const englishEdition = json.data[1];
-
-        const mergedAyahs: Ayah[] = arabicEdition.ayahs.map(
-          (
-            item: {
-              number: number;
-              numberInSurah: number;
-              text: string;
-              audio: string;
-            },
-            idx: number
-          ) => ({
-            number: item.number,
-            numberInSurah: item.numberInSurah,
-            text: item.text,
-            audio: item.audio,
-            translation: englishEdition.ayahs[idx]?.text ?? "",
-          })
-        );
-
-        setSurahData({
-          number: arabicEdition.number,
-          name: arabicEdition.name,
-          englishName: arabicEdition.englishName,
-          englishNameTranslation: arabicEdition.englishNameTranslation,
-          numberOfAyahs: arabicEdition.numberOfAyahs,
-          revelationType: arabicEdition.revelationType,
-          ayahs: mergedAyahs,
-        });
-      }
-    } catch (error) {
-      console.error("Failed to fetch Surah:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedSurah, reciter]);
-
+  // 2. Fetch Surah Hifz View Data
   useEffect(() => {
-    loadSurah();
-  }, [loadSurah]);
+    if (viewMode !== 'surah') return;
+    setLoading(true);
+    setActiveAyahIndex(null);
+
+    fetch(
+      `https://api.alquran.cloud/v1/surah/${selectedSurahNum}/editions/quran-uthmani,en.sahih,${reciter}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.code === 200 && Array.isArray(data.data)) {
+          const [arabicEdition, englishEdition, audioEdition] = data.data;
+          const combinedAyahs: Ayah[] = arabicEdition.ayahs.map(
+            (ayah: any, index: number) => ({
+              number: ayah.number,
+              numberInSurah: ayah.numberInSurah,
+              arabicText: ayah.text,
+              translationText: englishEdition.ayahs[index]?.text || '',
+              audioUrl: audioEdition.ayahs[index]?.audio || '',
+            })
+          );
+
+          setSurahDetail({
+            number: arabicEdition.number,
+            name: arabicEdition.name,
+            englishName: arabicEdition.englishName,
+            englishNameTranslation: arabicEdition.englishNameTranslation,
+            ayahs: combinedAyahs,
+          });
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [selectedSurahNum, reciter, viewMode]);
+
+  // 3. Fetch Real 604-Page Mushaf Data
+  useEffect(() => {
+    if (viewMode !== 'mushaf') return;
+    setLoading(true);
+    setActiveAyahIndex(null);
+
+    Promise.all([
+      fetch(`https://api.alquran.cloud/v1/page/${pageNumber}/quran-uthmani`).then(
+        (r) => r.json()
+      ),
+      fetch(`https://api.alquran.cloud/v1/page/${pageNumber}/${reciter}`).then(
+        (r) => r.json()
+      ),
+    ])
+      .then(([arabicRes, audioRes]) => {
+        if (arabicRes.code === 200 && audioRes.code === 200) {
+          const combined: Ayah[] = arabicRes.data.ayahs.map(
+            (ayah: any, idx: number) => ({
+              number: ayah.number,
+              numberInSurah: ayah.numberInSurah,
+              arabicText: ayah.text,
+              translationText: '',
+              audioUrl: audioRes.data.ayahs[idx]?.audio || '',
+              page: ayah.page,
+              juz: ayah.juz,
+              surahNumber: ayah.surah?.number,
+              surahName: ayah.surah?.name,
+              surahEnglishName: ayah.surah?.englishName,
+            })
+          );
+          setPageAyahs(combined);
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [pageNumber, reciter, viewMode]);
+
+  const activeAyahList =
+    viewMode === 'mushaf' ? pageAyahs : surahDetail?.ayahs || [];
 
   const currentAyah =
-    surahData && currentAyahIndex !== null
-      ? surahData.ayahs[currentAyahIndex]
+    activeAyahIndex !== null && activeAyahList[activeAyahIndex]
+      ? activeAyahList[activeAyahIndex]
       : null;
 
+  // 4. Play Audio & Scroll Active Ayah Into View
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio || !currentAyah) return;
-
-    if (audio.src !== currentAyah.audio) {
-      audio.src = currentAyah.audio;
+    if (currentAyah && audioRef.current) {
+      audioRef.current.src = currentAyah.audioUrl;
+      audioRef.current.play().catch(() => {});
     }
-
-    if (isPlaying) {
-      audio.play().catch(() => {});
-      const el = document.getElementById(`ayah-${currentAyah.numberInSurah}`);
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    } else {
-      audio.pause();
+    if (activeCardRef.current) {
+      activeCardRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
     }
-  }, [currentAyah, isPlaying]);
-
-  const handlePlayAyah = (index: number) => {
-    if (currentAyahIndex === index) {
-      setIsPlaying((prev) => !prev);
-    } else {
-      setCurrentAyahIndex(index);
-      setIsPlaying(true);
-    }
-  };
+  }, [currentAyah]);
 
   const handleAudioEnded = () => {
-    if (!surahData || currentAyahIndex === null) return;
-    if (repeatAyah && audioRef.current) {
+    if (activeAyahIndex === null) return;
+
+    if (isRepeatAyah && audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play();
       return;
     }
-    if (currentAyahIndex + 1 < surahData.ayahs.length) {
-      setCurrentAyahIndex(currentAyahIndex + 1);
-      setIsPlaying(true);
+
+    if (activeAyahIndex + 1 < activeAyahList.length) {
+      setActiveAyahIndex(activeAyahIndex + 1);
     } else {
-      setIsPlaying(false);
-      setCurrentAyahIndex(null);
+      setActiveAyahIndex(null);
     }
   };
 
-  const toggleHifzMode = () => {
-    setHifzMode((prev) => !prev);
-    setRevealedAyahs({});
-  };
+  const currentJuz = pageAyahs[0]?.juz || 1;
+  const surahNamesOnPage = Array.from(
+    new Set(pageAyahs.map((a) => a.surahEnglishName).filter(Boolean))
+  ).join(' • ');
 
-  const toggleRevealAyah = (ayahNumber: number) => {
-    setRevealedAyahs((prev) => ({
-      ...prev,
-      [ayahNumber]: !prev[ayahNumber],
-    }));
-  };
+  const activeLabel =
+    viewMode === 'mushaf'
+      ? `Page ${pageNumber}`
+      : surahDetail?.englishName || '';
 
   return (
     <>
-      <header className="navbar">
-        <div className="nav-container">
-          <div className="brand">
-            <span>📖 QuranHifz</span>
+      {/* TOP NAVIGATION BAR */}
+      <header className="app-header">
+        <div className="brand">
+          <h1>QuranHifz</h1>
+          <span className="brand-tag">Shahadah Studios</span>
+        </div>
+
+        <div className="controls">
+          <div className="mode-tabs">
+            <button
+              className={`mode-tab ${viewMode === 'mushaf' ? 'active' : ''}`}
+              onClick={() => setViewMode('mushaf')}
+            >
+              Mushaf (604 Pages)
+            </button>
+            <button
+              className={`mode-tab ${viewMode === 'surah' ? 'active' : ''}`}
+              onClick={() => setViewMode('surah')}
+            >
+              Surah Hifz View
+            </button>
           </div>
 
-          <div className="controls-group">
+          {viewMode === 'surah' && (
             <select
               aria-label="Select Surah"
-              className="select-input"
-              value={selectedSurah}
-              onChange={(e) => setSelectedSurah(Number(e.target.value))}
+              value={selectedSurahNum}
+              onChange={(e) => setSelectedSurahNum(Number(e.target.value))}
             >
               {surahs.map((s) => (
                 <option key={s.number} value={s.number}>
@@ -191,180 +227,205 @@ export default function QuranHifzPage() {
                 </option>
               ))}
             </select>
+          )}
 
-            <select
-              aria-label="Select Reciter"
-              className="select-input"
-              value={reciter}
-              onChange={(e) => setReciter(e.target.value)}
-            >
-              {RECITERS.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            type="button"
-            className={`btn ${hifzMode ? "btn-active" : ""}`}
-            onClick={toggleHifzMode}
-            title="Blur verses to test your memorization"
+          <select
+            aria-label="Select Reciter"
+            value={reciter}
+            onChange={(e) => setReciter(e.target.value)}
           >
-            <span>Hifz Mode: {hifzMode ? "ON" : "OFF"}</span>
-          </button>
+            {RECITERS.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
+            ))}
+          </select>
+
+          {viewMode === 'surah' && (
+            <button onClick={() => setHideTranslation(!hideTranslation)}>
+              {hideTranslation ? 'Show Translation' : 'Hide Translation'}
+            </button>
+          )}
         </div>
       </header>
 
-      <main className="container">
-        {loading || !surahData ? (
-          <div className="loader">Loading Surah...</div>
-        ) : (
-          <>
-            <section className="surah-banner">
-              <div className="arabic-title">{surahData.name}</div>
-              <h1>
-                {surahData.number}. {surahData.englishName}
-              </h1>
-              <p>
-                {surahData.englishNameTranslation} • {surahData.revelationType} •{" "}
-                {surahData.numberOfAyahs} Ayahs
-              </p>
-              <div style={{ marginTop: "1rem" }}>
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => handlePlayAyah(0)}
-                >
-                  <span>▶ Play Full Surah</span>
-                </button>
-              </div>
-            </section>
+      {/* MAIN CONTENT */}
+      {loading ? (
+        <div className="loader">Loading Mushaf...</div>
+      ) : viewMode === 'mushaf' ? (
+        /* REAL 604-PAGE MUSHAF VIEW */
+        <main className="sf-container">
+          <div className="mushaf-toolbar">
+            <button
+              className="sf-btn"
+              onClick={() => setPageNumber(Math.min(604, pageNumber + 1))}
+              disabled={pageNumber >= 604}
+            >
+              ← Next Page
+            </button>
 
-            {surahData.number !== 1 && surahData.number !== 9 && (
-              <div className="bismillah">
-                بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
-              </div>
-            )}
+            <div className="mushaf-meta">
+              <span className="sf-badge">Juz {currentJuz}</span>
+              <span className="mushaf-surah-title">{surahNamesOnPage}</span>
+              <label className="page-jump">
+                Page{' '}
+                <input
+                  type="number"
+                  min={1}
+                  max={604}
+                  value={pageNumber}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val >= 1 && val <= 604) setPageNumber(val);
+                  }}
+                />{' '}
+                / 604
+              </label>
+            </div>
 
-            <div>
-              {surahData.ayahs.map((ayah, idx) => {
-                const ayahPlaying = currentAyahIndex === idx && isPlaying;
-                const isRevealed = !hifzMode || Boolean(revealedAyahs[ayah.number]);
-                const isHidden = hifzMode && !isRevealed;
+            <button
+              className="sf-btn"
+              onClick={() => setPageNumber(Math.max(1, pageNumber - 1))}
+              disabled={pageNumber <= 1}
+            >
+              Prev Page →
+            </button>
+          </div>
+
+          <div className="mushaf-page-frame">
+            <div className="mushaf-page-inner" dir="rtl" lang="ar">
+              {pageAyahs.map((ayah, idx) => {
+                const isActive = idx === activeAyahIndex;
+                const isNewSurah = ayah.numberInSurah === 1;
 
                 return (
-                  <article
-                    key={ayah.number}
-                    id={`ayah-${ayah.numberInSurah}`}
-                    className={`verse-card ${ayahPlaying ? "playing" : ""}`}
-                  >
-                    <div className="verse-header">
-                      <span className="verse-badge">
-                        {surahData.number}:{ayah.numberInSurah}
-                      </span>
-
-                      <div className="controls-group">
-                        {hifzMode && (
-                          <button
-                            type="button"
-                            className="btn"
-                            onClick={() => toggleRevealAyah(ayah.number)}
-                          >
-                            <span>{isRevealed ? "Hide" : "Reveal"}</span>
-                          </button>
+                  <React.Fragment key={ayah.number}>
+                    {isNewSurah && (
+                      <div className="mushaf-surah-header">
+                        <span>{ayah.surahName}</span>
+                        {ayah.surahNumber !== 1 && ayah.surahNumber !== 9 && (
+                          <div className="mushaf-bismillah">
+                            بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+                          </div>
                         )}
-
-                        <button
-                          type="button"
-                          className={`btn ${ayahPlaying ? "btn-active" : ""}`}
-                          onClick={() => handlePlayAyah(idx)}
-                        >
-                          <span>{ayahPlaying ? "❚❚ Pause" : "▶ Listen"}</span>
-                        </button>
                       </div>
-                    </div>
+                    )}
 
-                    <p
-                      className={`arabic-text ${isHidden ? "hifz-blurred" : ""}`}
-                      onClick={() => isHidden && toggleRevealAyah(ayah.number)}
+                    <span
+                      onClick={() => setActiveAyahIndex(idx)}
+                      className={`mushaf-ayah-span ${isActive ? 'active' : ''}`}
+                      title={`Click to listen (${ayah.surahEnglishName} ${ayah.numberInSurah})`}
                     >
-                      {ayah.text}
-                    </p>
-
-                    <p
-                      className={`translation-text ${isHidden ? "hifz-blurred" : ""}`}
-                      onClick={() => isHidden && toggleRevealAyah(ayah.number)}
-                    >
-                      {ayah.translation}
-                    </p>
-                  </article>
+                      {ayah.arabicText}{' '}
+                      <span className="ayah-end-symbol">
+                        ﴿{toArabicDigits(ayah.numberInSurah)}﴾
+                      </span>{' '}
+                    </span>
+                  </React.Fragment>
                 );
               })}
             </div>
-          </>
-        )}
-      </main>
 
-      {surahData && currentAyah && (
-        <div className="audio-bar">
-          <div className="audio-container">
-            <div>
-              <strong>{surahData.englishName}</strong> — Ayah{" "}
-              {currentAyah.numberInSurah} of {surahData.ayahs.length}
+            <div className="mushaf-page-footer">
+              <span>{toArabicDigits(pageNumber)}</span>
             </div>
+          </div>
+        </main>
+      ) : (
+        /* VERSE-BY-VERSE SURAH HIFZ VIEW */
+        surahDetail && (
+          <main className="container">
+            <div className="surah-banner">
+              <h2>{surahDetail.name}</h2>
+              <p>
+                {surahDetail.englishName} ({surahDetail.englishNameTranslation}) •{' '}
+                {surahDetail.ayahs.length} Ayahs
+              </p>
+              <button
+                className="play-btn"
+                style={{ marginTop: '1rem' }}
+                onClick={() => setActiveAyahIndex(0)}
+              >
+                ▶ Play Full Surah
+              </button>
+            </div>
+
+            {surahDetail.ayahs.map((ayah, idx) => {
+              const isActive = idx === activeAyahIndex;
+              return (
+                <div
+                  key={ayah.number}
+                  ref={isActive ? activeCardRef : null}
+                  className={`ayah-card ${isActive ? 'active' : ''}`}
+                >
+                  <div className="ayah-top-bar">
+                    <span className="ayah-badge">
+                      {surahDetail.number}:{ayah.numberInSurah}
+                    </span>
+                    <button
+                      className="play-btn"
+                      onClick={() => setActiveAyahIndex(idx)}
+                    >
+                      {isActive ? 'Playing...' : '▶ Listen'}
+                    </button>
+                  </div>
+
+                  <p className="arabic-text">{ayah.arabicText}</p>
+
+                  {!hideTranslation && (
+                    <p className="translation-text">{ayah.translationText}</p>
+                  )}
+                </div>
+              );
+            })}
+          </main>
+        )
+      )}
+
+      {/* STICKY AUDIO PLAYER */}
+      {currentAyah && activeAyahIndex !== null && (
+        <div className="audio-bar">
+          <div className="audio-inner">
+            <div className="audio-info">
+              Playing: {activeLabel} — Ayah {currentAyah.numberInSurah}
+            </div>
+
+            <audio
+              ref={audioRef}
+              controls
+              onEnded={handleAudioEnded}
+              style={{ height: '36px', maxWidth: '300px' }}
+            />
 
             <div className="audio-controls">
               <button
-                type="button"
-                className="btn"
-                disabled={currentAyahIndex === 0}
-                onClick={() => {
-                  if (currentAyahIndex !== null && currentAyahIndex > 0) {
-                    setCurrentAyahIndex(currentAyahIndex - 1);
-                    setIsPlaying(true);
-                  }
-                }}
+                onClick={() =>
+                  setActiveAyahIndex(Math.max(0, activeAyahIndex - 1))
+                }
+                disabled={activeAyahIndex === 0}
               >
-                ◀ Prev
+                Prev
               </button>
 
               <button
-                type="button"
-                className="play-btn"
-                onClick={() => setIsPlaying((prev) => !prev)}
+                onClick={() =>
+                  setActiveAyahIndex(
+                    Math.min(activeAyahList.length - 1, activeAyahIndex + 1)
+                  )
+                }
+                disabled={activeAyahIndex === activeAyahList.length - 1}
               >
-                {isPlaying ? "❚❚" : "▶"}
+                Next
               </button>
 
               <button
-                type="button"
-                className="btn"
-                disabled={currentAyahIndex === surahData.ayahs.length - 1}
-                onClick={() => {
-                  if (
-                    currentAyahIndex !== null &&
-                    currentAyahIndex + 1 < surahData.ayahs.length
-                  ) {
-                    setCurrentAyahIndex(currentAyahIndex + 1);
-                    setIsPlaying(true);
-                  }
-                }}
+                onClick={() => setIsRepeatAyah(!isRepeatAyah)}
+                className={isRepeatAyah ? 'repeat-active' : ''}
+                title="Repeat current verse for Hifz memorization"
               >
-                Next ▶
-              </button>
-
-              <button
-                type="button"
-                className={`btn ${repeatAyah ? "btn-active" : ""}`}
-                onClick={() => setRepeatAyah((prev) => !prev)}
-              >
-                ↻ Repeat Ayah: {repeatAyah ? "ON" : "OFF"}
+                {isRepeatAyah ? 'Hifz Loop: ON' : 'Hifz Loop: OFF'}
               </button>
             </div>
-
-            <audio ref={audioRef} onEnded={handleAudioEnded} preload="auto" />
           </div>
         </div>
       )}
