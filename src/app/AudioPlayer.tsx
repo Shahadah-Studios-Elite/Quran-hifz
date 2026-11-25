@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { Ayah } from "@/types/quran";
+import { Ayah } from "../types/quran";
 
 interface AudioPlayerProps {
   ayahs: Ayah[];
