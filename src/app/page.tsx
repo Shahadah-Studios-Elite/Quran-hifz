@@ -262,7 +262,7 @@ export default function QuranHifzPage() {
               className={`mode-tab ${viewMode === 'surah' ? 'active' : ''}`}
               onClick={() => setViewMode('surah')}
             >
-              Surah Hifz View
+              Surah View
             </button>
           </div>
 
