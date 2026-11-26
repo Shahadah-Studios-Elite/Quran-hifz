@@ -780,3 +780,179 @@ body {
   border-color: var(--sf-primary);
   color: var(--sf-primary);
 }
+
+:root {
+  --qh-font-scale: 1;
+}
+
+/* Move Reciter & Translation toggle out of the top bar into Settings Modal */
+.controls select[aria-label="Select Reciter"],
+.controls > button {
+  display: none !important;
+}
+
+/* Ultra-compact mobile top header now that Reciter is in Settings */
+@media (max-width: 640px) {
+  .controls {
+    grid-template-columns: 1fr !important;
+  }
+
+  body {
+    padding-top: 86px !important;
+  }
+}
+
+/* Dynamic Font Scaling */
+.mushaf-page-inner {
+  font-size: calc(clamp(1.5rem, 4.8vw, 1.98rem) * var(--qh-font-scale)) !important;
+}
+
+.arabic-text {
+  font-size: calc(clamp(1.65rem, 5.2vw, 2.15rem) * var(--qh-font-scale)) !important;
+}
+
+/* Soft Night Mushaf Paper Mode */
+.night-mushaf-mode .mushaf-page-frame {
+  background-color: #1c1917 !important;
+  color: #f5f5f4 !important;
+  border-color: #b45309 !important;
+}
+
+.night-mushaf-mode .mushaf-surah-header span,
+.night-mushaf-mode .mushaf-page-footer {
+  color: #fbbf24 !important;
+}
+
+.night-mushaf-mode .mushaf-bismillah {
+  color: #e7e5e4 !important;
+}
+
+.night-mushaf-mode .mushaf-ayah-span.active {
+  background-color: rgba(16, 185, 129, 0.25) !important;
+  color: #6ee7b7 !important;
+}
+
+/* Hifz Blur Test Mode */
+.hifz-blur-mode .mushaf-ayah-span,
+.hifz-blur-mode .arabic-text {
+  filter: blur(7px);
+  transition: filter 0.2s ease;
+}
+
+.hifz-blur-mode .mushaf-ayah-span:hover,
+.hifz-blur-mode .mushaf-ayah-span.active,
+.hifz-blur-mode .arabic-text:hover,
+.hifz-blur-mode .ayah-card.active .arabic-text {
+  filter: blur(0);
+}
+
+/* Floating Gear Button near Audio Bar */
+.qh-gear-trigger {
+  position: fixed;
+  right: 1rem;
+  bottom: 72px;
+  z-index: 45;
+  background-color: var(--sf-surface) !important;
+  border: 1px solid var(--sf-primary) !important;
+  color: var(--sf-primary) !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  padding: 0.4rem 0.85rem !important;
+  border-radius: 999px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 640px) {
+  .qh-gear-trigger {
+    right: 0.75rem;
+    bottom: 132px;
+    padding: 0.35rem 0.75rem !important;
+    font-size: 0.78rem !important;
+  }
+}
+
+/* Settings Popup Modal */
+.qh-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background-color: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.qh-modal-card {
+  background-color: var(--sf-surface);
+  border: 1px solid var(--sf-primary);
+  border-radius: 16px;
+  max-width: 420px;
+  width: 100%;
+  padding: 1.35rem;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.qh-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--sf-border);
+  padding-bottom: 0.65rem;
+}
+
+.qh-modal-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.qh-modal-close {
+  min-height: 32px !important;
+  padding: 0.2rem 0.6rem !important;
+}
+
+.qh-setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.86rem;
+  color: var(--sf-text-muted);
+}
+
+.qh-setting-group select {
+  width: 100%;
+}
+
+.qh-setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--sf-text);
+}
+
+.qh-pill-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.qh-pill-group button {
+  min-height: 32px !important;
+  padding: 0.25rem 0.6rem !important;
+  font-size: 0.8rem !important;
+}
+
+.qh-scale-val {
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: center;
+  color: var(--sf-primary);
+}
