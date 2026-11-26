@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Amiri } from 'next/font/google';
+import {
+  Inter,
+  Amiri,
+  Scheherazade_New,
+  Noto_Naskh_Arabic,
+  Lateef,
+} from 'next/font/google';
 import './globals.css';
 import LandingOverlay from '@/components/LandingOverlay';
 import BismillahCleaner from '@/components/BismillahCleaner';
@@ -10,6 +16,21 @@ const amiri = Amiri({
   subsets: ['arabic'],
   weight: ['400', '700'],
   variable: '--font-amiri',
+});
+const scheherazade = Scheherazade_New({
+  subsets: ['arabic'],
+  weight: ['400', '700'],
+  variable: '--font-scheherazade',
+});
+const notoNaskh = Noto_Naskh_Arabic({
+  subsets: ['arabic'],
+  weight: ['400', '700'],
+  variable: '--font-noto-naskh',
+});
+const lateef = Lateef({
+  subsets: ['arabic'],
+  weight: ['400', '700'],
+  variable: '--font-lateef',
 });
 
 export const viewport: Viewport = {
@@ -34,7 +55,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${amiri.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${amiri.variable} ${scheherazade.variable} ${notoNaskh.variable} ${lateef.variable}`}
+    >
       <body>
         <LandingOverlay />
         <BismillahCleaner />
