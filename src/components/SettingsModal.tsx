@@ -9,11 +9,19 @@ const RECITERS = [
   { id: 'ar.minshawi', name: 'Mohamed Siddiq El-Minshawi' },
 ];
 
+const ARABIC_FONTS = [
+  { id: 'var(--font-amiri)', label: 'Amiri (Classic Uthmani)' },
+  { id: 'var(--font-scheherazade)', label: 'Scheherazade New (Madinah Style)' },
+  { id: 'var(--font-noto-naskh)', label: 'Noto Naskh (Crisp Mobile)' },
+  { id: 'var(--font-lateef)', label: 'Lateef (Clear Tajwid Marks)' },
+];
+
 const SPEEDS = [0.75, 1, 1.25];
 
 export default function SettingsModal() {
   const [open, setOpen] = useState(false);
   const [reciter, setReciter] = useState('ar.alafasy');
+  const [arabicFont, setArabicFont] = useState('var(--font-amiri)');
   const [speed, setSpeed] = useState(1);
   const [fontScale, setFontScale] = useState(1);
   const [nightMushaf, setNightMushaf] = useState(false);
@@ -49,6 +57,9 @@ export default function SettingsModal() {
     const observer = new MutationObserver(syncState);
     observer.observe(document.body, { childList: true, subtree: true });
 
+    const savedFont = localStorage.getItem('qh-arabic-font');
+    if (savedFont) setArabicFont(savedFont);
+
     const savedScale = Number(localStorage.getItem('qh-font-scale'));
     if (savedScale >= 0.8 && savedScale <= 1.5) setFontScale(savedScale);
 
@@ -57,6 +68,12 @@ export default function SettingsModal() {
 
     return () => observer.disconnect();
   }, []);
+
+  // Apply Arabic Calligraphic Font
+  useEffect(() => {
+    document.documentElement.style.setProperty('--qh-arabic-font', arabicFont);
+    localStorage.setItem('qh-arabic-font', arabicFont);
+  }, [arabicFont]);
 
   // Apply Font Scale
   useEffect(() => {
@@ -120,19 +137,17 @@ export default function SettingsModal() {
 
   return (
     <>
-      {/* Gear Trigger Button (Sits right above/near Audio Controls) */}
       <button
         className="qh-gear-trigger"
         onClick={() => setOpen(true)}
         aria-label="Open Reciter and Reading Settings"
         title="Settings & Reciter"
       >
-        <svg xmlns="http://w3.org" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4e4f4a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://w3.org" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#24c421" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
   <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2"/><circle cx="12" cy="12" r="3"/>
 </svg> Settings
       </button>
 
-      {/* Settings Popup Modal */}
       {open && (
         <div
           className="qh-modal-backdrop"
@@ -168,7 +183,23 @@ export default function SettingsModal() {
               </select>
             </div>
 
-            {/* 2. Recitation Speed */}
+            {/* 2. Arabic Calligraphic Font Selector */}
+            <div className="qh-setting-group">
+              <label htmlFor="modal-arabic-font">Arabic Calligraphy</label>
+              <select
+                id="modal-arabic-font"
+                value={arabicFont}
+                onChange={(e) => setArabicFont(e.target.value)}
+              >
+                {ARABIC_FONTS.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 3. Recitation Speed */}
             <div className="qh-setting-row">
               <span>Recitation Speed</span>
               <div className="qh-pill-group">
@@ -184,7 +215,7 @@ export default function SettingsModal() {
               </div>
             </div>
 
-            {/* 3. Arabic Font Size */}
+            {/* 4. Arabic Font Size */}
             <div className="qh-setting-row">
               <span>Arabic Text Size</span>
               <div className="qh-pill-group">
@@ -208,7 +239,7 @@ export default function SettingsModal() {
               </div>
             </div>
 
-            {/* 4. Soft Night Mushaf Paper */}
+            {/* 5. Soft Night Mushaf Paper */}
             <div className="qh-setting-row">
               <span>Soft Night Mushaf</span>
               <button
@@ -219,7 +250,7 @@ export default function SettingsModal() {
               </button>
             </div>
 
-            {/* 5. Hifz Blur Test */}
+            {/* 6. Hifz Blur Test */}
             <div className="qh-setting-row">
               <span>Hifz Blur Test</span>
               <button
@@ -230,7 +261,7 @@ export default function SettingsModal() {
               </button>
             </div>
 
-            {/* 6. Translation Toggle (Visible in Surah Hifz View) */}
+            {/* 7. Translation Toggle (Visible in Surah Hifz View) */}
             {hasTranslationBtn && (
               <div className="qh-setting-row">
                 <span>English Translation</span>
