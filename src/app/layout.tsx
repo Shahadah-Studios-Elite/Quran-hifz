@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, Amiri } from 'next/font/google';
 import './globals.css';
 import LandingOverlay from '@/components/LandingOverlay';
+import BismillahCleaner from '@/components/BismillahCleaner';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const amiri = Amiri({
@@ -35,6 +36,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${amiri.variable}`}>
       <body>
         <LandingOverlay />
+        <BismillahCleaner />
         {children}
       </body>
     </html>
