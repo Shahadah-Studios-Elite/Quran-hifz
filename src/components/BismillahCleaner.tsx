@@ -2,12 +2,25 @@
 
 import { useEffect } from 'react';
 
-const BISMILLAH_PREFIXES = [
-  'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ ',
-  'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ ',
-  'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ',
-  'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ',
-];
+function removeLeadingBismillah(raw: string): string {
+  // Strip tashkeel/diacritics and normalize Alif Wasla (ٱ -> ا) for reliable checking
+  const stripMarks = (s: string) =>
+    s
+      .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '')
+      .replace(/ٱ/g, 'ا')
+      .trim();
+
+  const words = raw.trim().split(/\s+/);
+  if (words.length <= 4) return raw;
+
+  const firstFourBase = words.slice(0, 4).map(stripMarks).join(' ');
+
+  if (firstFourBase === 'بسم الله الرحمن الرحيم') {
+    return words.slice(4).join(' ');
+  }
+
+  return raw;
+}
 
 function stripDuplicateBismillah() {
   // 1. Clean Surah Hifz View (Ayah 1 cards where badge is NOT "1:1")
@@ -18,11 +31,9 @@ function stripDuplicateBismillah() {
     const arabicEl = card.querySelector('.arabic-text');
     if (!arabicEl || !arabicEl.textContent) return;
 
-    for (const prefix of BISMILLAH_PREFIXES) {
-      if (arabicEl.textContent.startsWith(prefix)) {
-        arabicEl.textContent = arabicEl.textContent.slice(prefix.length).trim();
-        break;
-      }
+    const cleaned = removeLeadingBismillah(arabicEl.textContent);
+    if (cleaned !== arabicEl.textContent) {
+      arabicEl.textContent = cleaned;
     }
   });
 
@@ -34,11 +45,9 @@ function stripDuplicateBismillah() {
 
     const textNode = firstAyah.firstChild;
     if (textNode && textNode.nodeType === Node.TEXT_NODE && textNode.textContent) {
-      for (const prefix of BISMILLAH_PREFIXES) {
-        if (textNode.textContent.startsWith(prefix)) {
-          textNode.textContent = textNode.textContent.slice(prefix.length).trim();
-          break;
-        }
+      const cleaned = removeLeadingBismillah(textNode.textContent);
+      if (cleaned !== textNode.textContent) {
+        textNode.textContent = cleaned + ' ';
       }
     }
   });
@@ -55,6 +64,7 @@ export default function BismillahCleaner() {
     observer.observe(document.body, {
       childList: true,
       subtree: true,
+      characterData: true,
     });
 
     return () => observer.disconnect();
