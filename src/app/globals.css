@@ -969,3 +969,87 @@ body {
 .surah-banner h2 {
   font-family: var(--qh-arabic-font), serif !important;
 }
+
+
+/* 1. Warm Parchment Sepia (Eye-Comfort Reading) */
+[data-site-theme="sepia"] {
+  --sf-bg: #1c1713;
+  --sf-surface: #261f1a;
+  --sf-surface-hover: #332922;
+  --sf-border: #42352c;
+  --sf-primary: #d97706;
+  --sf-primary-hover: #b45309;
+  --sf-primary-soft: rgba(217, 119, 6, 0.16);
+  --sf-gold: #f59e0b;
+  --sf-text: #fef3c7;
+  --sf-text-muted: #d6c3a5;
+  --mushaf-paper: #f7eedc;
+  --mushaf-ink: #291d12;
+}
+
+[data-site-theme="sepia"] .surah-banner {
+  background: linear-gradient(135deg, #78350f 0%, #261f1a 100%) !important;
+}
+
+[data-site-theme="sepia"] .qh-landing-screen {
+  background: radial-gradient(circle at top, #78350f 0%, #1c1713 65%) !important;
+}
+
+/* 2. Midnight OLED Black (Pure Pitch Black Battery Saver) */
+[data-site-theme="oled"] {
+  --sf-bg: #000000;
+  --sf-surface: #09090b;
+  --sf-surface-hover: #18181b;
+  --sf-border: #27272a;
+  --sf-primary: #10b981;
+  --sf-primary-hover: #059669;
+  --sf-primary-soft: rgba(16, 185, 129, 0.15);
+  --sf-gold: #eab308;
+  --sf-text: #ffffff;
+  --sf-text-muted: #a1a1aa;
+  --mushaf-paper: #09090b;
+  --mushaf-ink: #f4f4f5;
+}
+
+[data-site-theme="oled"] .mushaf-surah-header span,
+[data-site-theme="oled"] .mushaf-page-footer {
+  color: #facc15 !important;
+}
+
+[data-site-theme="oled"] .mushaf-bismillah {
+  color: #e4e4e7 !important;
+}
+
+[data-site-theme="oled"] .mushaf-ayah-span.active {
+  background-color: rgba(16, 185, 129, 0.25) !important;
+  color: #6ee7b7 !important;
+}
+
+[data-site-theme="oled"] .qh-landing-screen {
+  background: #000000 !important;
+}
+
+/* 3. High Contrast Focus (Crisp Readability) */
+[data-site-theme="contrast"] {
+  --sf-bg: #000000;
+  --sf-surface: #0a0a0a;
+  --sf-surface-hover: #171717;
+  --sf-border: #ffffff;
+  --sf-primary: #34d399;
+  --sf-primary-hover: #10b981;
+  --sf-primary-soft: rgba(52, 211, 153, 0.22);
+  --sf-gold: #fde047;
+  --sf-text: #ffffff;
+  --sf-text-muted: #e5e5e5;
+  --mushaf-paper: #ffffff;
+  --mushaf-ink: #000000;
+}
+
+[data-site-theme="contrast"] .mushaf-surah-header span,
+[data-site-theme="contrast"] .mushaf-page-footer {
+  color: #000000 !important;
+}
+
+[data-site-theme="contrast"] .qh-landing-screen {
+  background: #000000 !important;
+}
