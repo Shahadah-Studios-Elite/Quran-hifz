@@ -956,3 +956,16 @@ body {
   text-align: center;
   color: var(--sf-primary);
 }
+
+:root {
+  --qh-arabic-font: var(--font-amiri);
+}
+
+.mushaf-page-inner,
+.mushaf-surah-header span,
+.mushaf-bismillah,
+.mushaf-page-footer,
+.arabic-text,
+.surah-banner h2 {
+  font-family: var(--qh-arabic-font), serif !important;
+}
