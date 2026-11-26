@@ -3,6 +3,7 @@ import { Inter, Amiri } from 'next/font/google';
 import './globals.css';
 import LandingOverlay from '@/components/LandingOverlay';
 import BismillahCleaner from '@/components/BismillahCleaner';
+import SettingsModal from '@/components/SettingsModal';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const amiri = Amiri({
@@ -37,6 +38,7 @@ export default function RootLayout({
       <body>
         <LandingOverlay />
         <BismillahCleaner />
+        <SettingsModal />
         {children}
       </body>
     </html>
