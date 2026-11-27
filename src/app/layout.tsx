@@ -10,6 +10,7 @@ import './globals.css';
 import LandingOverlay from '@/components/LandingOverlay';
 import BismillahCleaner from '@/components/BismillahCleaner';
 import SettingsModal from '@/components/SettingsModal';
+import VoiceCommands from '@/components/VoiceCommands';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const amiri = Amiri({
@@ -63,6 +64,7 @@ export default function RootLayout({
         <LandingOverlay />
         <BismillahCleaner />
         <SettingsModal />
+        <VoiceCommands />
         {children}
       </body>
     </html>
