@@ -20,7 +20,6 @@ export default function PageTouch() {
       if (e.touches.length !== 1) return;
 
       const target = e.target as HTMLElement | null;
-      // Ignore touches inside sliders, inputs, modals, or the landing screen
       if (
         target?.closest('input, select, textarea, .qh-modal-card, .qh-landing-screen')
       ) {
@@ -28,9 +27,10 @@ export default function PageTouch() {
         return;
       }
 
+      const touch = e.touches[0];
       touchStartRef.current = {
-        x: e.touches.clientX,
-        y: e.touches.clientY,
+        x: touch.clientX,
+        y: touch.clientY,
         time: Date.now(),
       };
     };
@@ -40,10 +40,9 @@ export default function PageTouch() {
       touchStartRef.current = null;
       if (!start || e.changedTouches.length !== 1) return;
 
-      const endX = e.changedTouches.clientX;
-      const endY = e.changedTouches.clientY;
-      const deltaX = endX - start.x;
-      const deltaY = endY - start.y;
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - start.x;
+      const deltaY = touch.clientY - start.y;
       const elapsed = Date.now() - start.time;
 
       // 1. Double-Tap on any Ayah to toggle Hifz Loop
@@ -94,7 +93,6 @@ export default function PageTouch() {
           b.textContent?.includes('Prev Page')
         ) as HTMLButtonElement | undefined;
 
-        // Mushaf 604-Page Mode: Swipe right to flip to the next Arabic page
         if (nextPageBtn && prevPageBtn) {
           if (deltaX > 0 && !nextPageBtn.disabled) {
             nextPageBtn.click();
@@ -108,7 +106,6 @@ export default function PageTouch() {
           return;
         }
 
-        // Surah Hifz View: Swipe left/right to move between Ayahs
         const findAudioBtn = (label: string) =>
           Array.from(document.querySelectorAll('.audio-controls button')).find(
             (b) => b.textContent?.trim().toLowerCase().includes(label)
