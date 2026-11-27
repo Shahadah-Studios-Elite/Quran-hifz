@@ -10,6 +10,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6)](https://www.typescriptlang.org/)
 [![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-2088ff)](https://pages.github.com/)
 [![Deploy QuranHifz to GitHub Pages](https://github.com/Shahadah-Studios-Elite/Quran-hifz/actions/workflows/deploy.yml/badge.svg)](https://github.com/Shahadah-Studios-Elite/Quran-hifz/actions/workflows/deploy.yml)
+
 **QuranHifz** helps learners read, listen to, repeat, annotate, and study the Quran in a clean, responsive browser experience. It combines Mushaf-style navigation, complete Surah study, multiple reciters, automatic ayah playback, memorization loops, voice controls, and a collaborative drawing board.
 
 **Live application:** [quranhifz.sahihfinder.com](https://quranhifz.sahihfinder.com/)
